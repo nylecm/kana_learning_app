@@ -1,0 +1,7 @@
+# Build output — swift build / ./build.sh
+.build/
+Kana.app/
+.swiftpm/
+
+# macOS
+.DS_Store
