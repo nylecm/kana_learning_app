@@ -1,6 +1,9 @@
 import SwiftUI
 
 /// A live sitting. Everything here is reachable from the keyboard (spec.md §6).
+///
+/// The session chrome lives in the window toolbar — title, progress and *End* — so the content area
+/// is only ever the card itself.
 struct SessionView: View {
     @Environment(AppModel.self) private var model
     let session: StudySession
@@ -10,9 +13,6 @@ struct SessionView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-            Divider()
-
             if session.finished {
                 SummaryView(session: session)
             } else {
@@ -21,59 +21,53 @@ struct SessionView: View {
                 footer
             }
         }
+        .navigationTitle(session.title)
+        .navigationSubtitle("\(session.answeredCount) of \(session.plannedTotal) reviewed")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("End") { model.endSession() }
+                    .glassButtonStyle()
+                    .help("End the session (Esc)")
+            }
+        }
         .onChange(of: session.presentationIndex) { _, _ in syncFocus() }
         .onChange(of: session.stage) { _, _ in syncFocus() }
         .onAppear { syncFocus() }
     }
 
-    // MARK: - Header
-
-    private var header: some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(session.title).font(.headline)
-                Text("\(session.answeredCount) of \(session.plannedTotal) reviewed")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            ProgressView(value: session.progress)
-                .frame(maxWidth: 320)
-
-            Spacer()
-
-            if let card = session.current {
-                Text("\(card.script.displayName) · \(card.kind.displayName)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Button("End") { model.endSession() }
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-    }
-
     // MARK: - Card
 
     private var cardArea: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 22) {
             Spacer(minLength: 8)
+
+            if let card = session.current {
+                Text("\(card.script.displayName) · \(card.kind.displayName)")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(.quaternary, in: Capsule())
+            }
+
             prompt
             answerControls
+
             Spacer(minLength: 8)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 24)
         .frame(maxWidth: .infinity)
     }
 
+    /// The card front, on its own glass stage — the one place in the window where the material is
+    /// doing real work, holding the character up above everything else.
     @ViewBuilder
     private var prompt: some View {
         if let card = session.current {
-            VStack(spacing: 10) {
-                HStack(spacing: 14) {
+            VStack(spacing: 12) {
+                HStack(spacing: 18) {
                     Text(card.kana)
-                        .font(.system(size: 116, weight: .medium))
+                        .font(.system(size: 116, weight: .medium, design: .rounded))
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
 
@@ -92,6 +86,9 @@ struct SessionView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            .padding(.horizontal, 46)
+            .padding(.vertical, 28)
+            .glassSurface(in: RoundedRectangle(cornerRadius: 32, style: .continuous))
         }
     }
 
@@ -102,7 +99,7 @@ struct SessionView: View {
             case .flip:
                 if session.stage == .asking {
                     Button("Show answer") { session.reveal() }
-                        .buttonStyle(.bordered)
+                        .glassButtonStyle(prominent: true, tint: Theme.accent)
                         .controlSize(.large)
                 } else {
                     GradeButtons(session: session, card: card)
@@ -149,8 +146,7 @@ struct SessionView: View {
 
     private var continueButton: some View {
         Button("Continue") { session.continueToNext() }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.accent)
+            .glassButtonStyle(prominent: true, tint: Theme.accent)
             .controlSize(.large)
     }
 
@@ -195,6 +191,13 @@ struct SessionView: View {
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
+            ProgressView(value: session.progress)
+                .progressViewStyle(.linear)
+                .frame(width: 110)
+                .help("\(session.answeredCount) of \(session.plannedTotal) reviewed")
+            Text("\(session.answeredCount)/\(session.plannedTotal)")
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
@@ -228,8 +231,7 @@ private struct GradeButtons: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
                 }
-                .buttonStyle(.bordered)
-                .tint(Theme.tint(for: grade))
+                .glassButtonStyle(tint: Theme.tint(for: grade))
                 .help("\(grade.title) — next in \(previews[grade] ?? "?")")
             }
         }
@@ -255,7 +257,7 @@ private struct ChoiceButtons: View {
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
+                .glassButtonStyle()
             }
         }
         .frame(maxWidth: 340)
@@ -305,10 +307,9 @@ private struct RevealPanel: View {
             .buttonStyle(.plain)
             .help("Hear the example word")
         }
-        .padding(16)
+        .padding(18)
         .frame(maxWidth: 620)
-        .background(Theme.panel, in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.hairline))
+        .glassSurface(in: RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
     }
 }
 
@@ -329,6 +330,9 @@ private struct SummaryView: View {
                 tile("Misses", "\(session.gradeCounts[.again] ?? 0)")
                 tile("Answers", "\(session.answers.count)")
             }
+            .padding(.horizontal, 34)
+            .padding(.vertical, 18)
+            .glassSurface(in: RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
 
             if !session.difficultCards.isEmpty {
                 VStack(spacing: 8) {
@@ -340,7 +344,7 @@ private struct SummaryView: View {
                                 .font(.system(size: 18))
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(Theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
+                                .background(Theme.accent.opacity(0.14), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                         }
                     }
                     .frame(maxWidth: 640)
@@ -352,11 +356,11 @@ private struct SummaryView: View {
                     model.session = nil
                     model.startSession()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.accent)
+                .glassButtonStyle(prominent: true, tint: Theme.accent)
                 .controlSize(.large)
 
                 Button("Back to setup") { model.session = nil }
+                    .glassButtonStyle()
                     .controlSize(.large)
             }
 

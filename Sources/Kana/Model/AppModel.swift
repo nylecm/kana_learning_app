@@ -20,6 +20,15 @@ final class AppModel {
             case .settings: "Settings"
             }
         }
+
+        /// The sidebar affordance for this screen.
+        var symbol: String {
+            switch self {
+            case .study: "rectangle.stack"
+            case .progress: "chart.bar.xaxis"
+            case .settings: "gearshape"
+            }
+        }
     }
 
     struct ChartCursor: Equatable {

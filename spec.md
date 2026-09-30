@@ -218,6 +218,13 @@ fresh install rather than a crash.
 
 ## 12. Screens
 
+The window is a two-column `NavigationSplitView`: the sidebar lists the three screens (a queue-count
+badge on Study, today's counters pinned below it) and the detail column hosts the current screen,
+which owns its own toolbar items, title and subtitle. On macOS 26 the sidebar, toolbars and cards
+use the system Liquid Glass material; macOS 14–15 render the same layout with standard materials,
+which is why `Package.swift` keeps `macOS(.v14)` and every glass API sits behind an availability
+check. The keyboard contract in §6 is unchanged by any of this.
+
 - **Study** — home (script, scope, kana chart, answer mode, today's counters, deck size, start) →
   session (character, reveal, answer controls keyed `1`–`4`, audio buttons, progress) → summary
   (accuracy, per-card delta, `⏎` to go again).

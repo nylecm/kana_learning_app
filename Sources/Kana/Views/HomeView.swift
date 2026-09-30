@@ -1,26 +1,47 @@
 import SwiftUI
 
+/// Setting up a sitting: what to study, how much of it, and how to answer.
 struct HomeView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
+        HStack(alignment: .top, spacing: 20) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    scriptCard
-                    scopeCard
-                    if model.scope == .selected { KanaChartView() }
-                    answerModeCard
+                GlassGroup(spacing: 8) {
+                    VStack(alignment: .leading, spacing: Theme.cardSpacing) {
+                        scriptCard
+                        scopeCard
+                        if model.scope == .selected { KanaChartView() }
+                        answerModeCard
+                    }
                 }
                 .padding(20)
             }
 
-            Divider()
-
             startPanel
-                .frame(width: 330)
-                .padding(20)
+                .frame(width: 320)
+                .padding(.top, 20)
+                .padding(.bottom, 20)
+                .padding(.trailing, 20)
         }
+        .navigationTitle("Study")
+        .navigationSubtitle(navigationSubtitle)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    model.startSession()
+                } label: {
+                    Label("Start session", systemImage: "play.fill")
+                }
+                .glassButtonStyle(prominent: true, tint: Theme.accent)
+                .disabled(!model.canStart)
+                .help("Start a session (⏎)")
+            }
+        }
+    }
+
+    private var navigationSubtitle: String {
+        "\(model.sessionTitle) · \(model.plannedQueue.count) queued"
     }
 
     // MARK: - Script
@@ -28,7 +49,7 @@ struct HomeView: View {
     private var scriptCard: some View {
         @Bindable var model = model
 
-        return SectionCard(title: "Script", hint: "H · K · M") {
+        return SectionCard(title: "Script", symbol: "textformat", hint: "H · K · M") {
             VStack(alignment: .leading, spacing: 10) {
                 Picker("Script", selection: $model.scriptMode) {
                     ForEach(ScriptMode.allCases) { mode in
@@ -51,6 +72,7 @@ struct HomeView: View {
                                 model.mixedChartScript = model.mixedChartScript.other
                             }
                             .font(.caption)
+                            .glassButtonStyle()
                         }
                     }
                 }
@@ -64,7 +86,7 @@ struct HomeView: View {
         @Bindable var model = model
         let counts = scopeCounts
 
-        return SectionCard(title: "Scope", hint: "1 · 2 · 3") {
+        return SectionCard(title: "Scope", symbol: "line.3.horizontal.decrease.circle", hint: "1 · 2 · 3") {
             VStack(alignment: .leading, spacing: 10) {
                 Picker("Scope", selection: $model.scope) {
                     Text("All · \(counts.all)").tag(Scope.all)
@@ -100,7 +122,7 @@ struct HomeView: View {
     private var answerModeCard: some View {
         @Bindable var model = model
 
-        return SectionCard(title: "How you answer", hint: "A cycles") {
+        return SectionCard(title: "How you answer", symbol: "keyboard", hint: "A cycles") {
             VStack(alignment: .leading, spacing: 8) {
                 Picker("Answer mode", selection: $model.settings.answerMode) {
                     ForEach(AnswerMode.allCases) { mode in
@@ -123,8 +145,8 @@ struct HomeView: View {
         @Bindable var model = model
         let queue = model.plannedQueue
 
-        return VStack(alignment: .leading, spacing: 16) {
-            SectionCard(title: "Today") {
+        return VStack(alignment: .leading, spacing: Theme.cardSpacing) {
+            SectionCard(title: "Today", symbol: "calendar") {
                 VStack(alignment: .leading, spacing: 8) {
                     statRow("New cards introduced", "\(model.todayLog.newIntroduced)")
                     statRow("Reviews answered", "\(model.todayLog.reviews)")
@@ -137,15 +159,13 @@ struct HomeView: View {
                 }
             }
 
-            SectionCard(title: "This session") {
+            SectionCard(title: "This session", symbol: "rectangle.stack") {
                 VStack(alignment: .leading, spacing: 8) {
                     statRow("Cards queued", "\(queue.count)")
                     statRow("Due now", "\(model.dueCount)")
                     statRow("Never seen", "\(model.newCount)")
                 }
             }
-
-            Spacer(minLength: 0)
 
             Button {
                 model.startSession()
@@ -157,8 +177,7 @@ struct HomeView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 6)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.accent)
+            .glassButtonStyle(prominent: true, tint: Theme.accent)
             .controlSize(.large)
             .disabled(!model.canStart)
 

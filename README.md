@@ -109,6 +109,16 @@ under **Settings** (`0` = unlimited, which is the default).
 macOS 14 or newer, and a Japanese voice installed (Kyoko ships with macOS). If audio is silent,
 check **System Settings → Accessibility → Spoken Content → System Voice → Manage Voices**.
 
+## Window
+
+The window is a native macOS split view: a sidebar for **Study / Progress / Settings** — with the
+number of queued cards badged on *Study* and today's counters pinned at the bottom — and a detail
+column where each screen owns its own toolbar items and title. `⌘1`–`⌘3` switch screens exactly as
+before; every keyboard command in the table above is unchanged.
+
+On macOS 26 the sidebar, toolbar and cards use the system Liquid Glass material. macOS 14 and 15
+render the same layout with standard materials, so nothing in the app requires the newer OS.
+
 ## License
 
 MIT — see `LICENSE`.

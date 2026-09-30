@@ -1,56 +1,126 @@
 import SwiftUI
 
+/// The window shell: a native sidebar on the left, the current screen on the right.
+///
+/// Building it on `NavigationSplitView` means macOS itself supplies the Liquid Glass sidebar, the
+/// rounded selection, the sidebar-toggle button, and the sidebar's own keyboard navigation. The
+/// `⌘1` `⌘2` `⌘3` commands keep driving the same selection binding they always did.
 struct RootView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         @Bindable var model = model
 
-        VStack(spacing: 0) {
-            header
-            Divider()
-            Group {
-                switch model.tab {
-                case .study: StudyTabView()
-                case .progress: StatsView()
-                case .settings: SettingsView()
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        NavigationSplitView {
+            Sidebar(selection: $model.tab)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 226, max: 300)
+        } detail: {
+            detail
         }
-        .background(Theme.canvas)
-        .frame(minWidth: 1000, minHeight: 700)
+        .frame(minWidth: 980, minHeight: 660)
     }
 
-    private var header: some View {
-        @Bindable var model = model
+    @ViewBuilder
+    private var detail: some View {
+        switch model.tab {
+        case .study: StudyTabView()
+        case .progress: StatsView()
+        case .settings: SettingsView()
+        }
+    }
+}
 
-        return HStack(spacing: 18) {
-            HStack(spacing: 8) {
-                Text("仮")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(Theme.accent)
-                Text("Kana")
-                    .font(.title3.weight(.semibold))
-            }
+/// The left column: the three screens, with today's numbers pinned to the bottom of the column.
+///
+/// The badge on *Study* is the number of cards the queue would hand out right now, so the sidebar
+/// answers "is there anything to do?" without leaving whichever screen you are on.
+private struct Sidebar: View {
+    @Environment(AppModel.self) private var model
+    @Binding var selection: AppModel.Tab
 
-            Picker("Section", selection: $model.tab) {
+    var body: some View {
+        VStack(spacing: 0) {
+            BrandMark()
+                .padding(.horizontal, 16)
+                .padding(.top, 6)
+                .padding(.bottom, 10)
+
+            List(selection: $selection) {
                 ForEach(AppModel.Tab.allCases) { tab in
-                    Text(tab.title).tag(tab)
+                    Label(tab.title, systemImage: tab.symbol)
+                        .badge(tab == .study ? model.plannedQueue.count : 0)
+                        .tag(tab)
                 }
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(width: 320)
-
-            Spacer()
-
-            Text("⌘1 ⌘2 ⌘3 switch · ⌘N new session")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+            .listStyle(.sidebar)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
+        .safeAreaInset(edge: .bottom, spacing: 0) { TodayFooter() }
+    }
+}
+
+private struct BrandMark: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        HStack(spacing: 9) {
+            Text("仮")
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(Theme.accent)
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Kana")
+                    .font(.headline)
+                Text(model.sessionTitle)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// Today's counters, floating on their own glass surface at the bottom of the sidebar.
+private struct TodayFooter: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        let log = model.todayLog
+
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Text("Today").font(.caption.weight(.semibold))
+                Spacer(minLength: 0)
+                if model.dueCount > 0 {
+                    Text("\(model.dueCount) due")
+                        .font(.caption)
+                        .foregroundStyle(Theme.accent)
+                }
+            }
+
+            HStack(spacing: 16) {
+                metric("\(log.newIntroduced)", "new")
+                metric("\(log.reviews)", "reviews")
+                metric("\(model.plannedQueue.count)", "queued")
+            }
+        }
+        .padding(11)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassSurface(in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .padding(.horizontal, 10)
+        .padding(.top, 4)
+        .padding(.bottom, 10)
+    }
+
+    private func metric(_ value: String, _ label: String) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(value)
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
     }
 }
 

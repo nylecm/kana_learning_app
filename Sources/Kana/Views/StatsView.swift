@@ -28,6 +28,12 @@ struct StatsView: View {
             Divider()
             table
         }
+        .navigationTitle("Progress")
+        .navigationSubtitle(subtitle)
+    }
+
+    private var subtitle: String {
+        "\(stats.count) cards · \(stats.filter { $0.progress.isStarted }.count) started"
     }
 
     // MARK: - Totals
@@ -54,8 +60,13 @@ struct StatsView: View {
             tile("Accuracy", String(format: "%.0f%%", accuracy * 100))
             Spacer()
         }
+        .padding(.horizontal, 22)
+        .padding(.vertical, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassSurface(in: RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
         .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(.top, 16)
+        .padding(.bottom, 12)
     }
 
     private func tile(_ label: String, _ value: String, tint: Color? = nil) -> some View {
@@ -118,8 +129,7 @@ struct StatsView: View {
                             .tint(row.accuracy >= 0.8 ? Theme.good : (row.accuracy >= 0.5 ? Theme.warn : Theme.accent))
                     }
                     .padding(8)
-                    .background(Theme.panel, in: RoundedRectangle(cornerRadius: 8))
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.hairline))
+                    .background(.quaternary, in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
                 }
             }
             .padding(.horizontal, 20)

@@ -58,11 +58,11 @@ struct KanaChartView: View {
             .padding(.horizontal, 3)
             .padding(.vertical, 4)
             .background(
-                isSelected ? Theme.accent.opacity(0.18) : Color.primary.opacity(0.04),
-                in: RoundedRectangle(cornerRadius: 7)
+                isSelected ? Theme.accent.opacity(0.18) : Color.primary.opacity(0.05),
+                in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 7)
+                RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous)
                     .stroke(
                         isCursor ? Theme.accent : (isSelected ? Theme.accent.opacity(0.55) : Theme.hairline),
                         lineWidth: isCursor ? 2 : 1

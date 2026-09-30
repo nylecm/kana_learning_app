@@ -104,6 +104,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .navigationTitle("Settings")
         .confirmationDialog(
             "Reset all progress?",
             isPresented: $confirmingReset,
@@ -118,12 +119,7 @@ struct SettingsView: View {
 
     private func keyRow(_ key: String, _ label: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text(key)
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 4))
-                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Theme.hairline))
+            KeyCap(text: key)
                 .frame(width: 130, alignment: .leading)
             Text(label).font(.callout).foregroundStyle(.secondary)
         }
