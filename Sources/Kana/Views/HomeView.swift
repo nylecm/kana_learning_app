@@ -5,33 +5,34 @@ struct HomeView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        HStack(alignment: .top, spacing: 20) {
-            ScrollView {
-                ScrollViewReader { proxy in
-                    GlassGroup(spacing: 8) {
-                        VStack(alignment: .leading, spacing: Theme.cardSpacing) {
-                            scriptCard
-                            scopeCard
-                            if model.scope == .selected { KanaChartView() }
-                            answerModeCard
+        GeometryReader { geometry in
+            HStack(alignment: .top, spacing: HomeView.columnSpacing) {
+                ScrollView {
+                    ScrollViewReader { proxy in
+                        GlassGroup(spacing: 8) {
+                            VStack(alignment: .leading, spacing: Theme.cardSpacing) {
+                                scriptCard
+                                scopeCard
+                                if model.scope == .selected { KanaChartView() }
+                                answerModeCard
+                            }
+                        }
+                        .onChange(of: model.cursor.row) { _, row in
+                            // A nil anchor scrolls the minimum amount that leaves the row wholly
+                            // visible, so arrowing just past the edge nudges the view and no more.
+                            guard model.scope == .selected else { return }
+                            proxy.scrollTo(KanaChartView.rowID(row), anchor: nil)
                         }
                     }
-                    .padding(20)
-                    .onChange(of: model.cursor.row) { _, row in
-                        // A nil anchor scrolls the minimum amount that leaves the row wholly
-                        // visible, so arrowing just past the edge nudges the view and no more.
-                        guard model.scope == .selected else { return }
-                        proxy.scrollTo(KanaChartView.rowID(row), anchor: nil)
-                    }
                 }
-            }
+                .frame(minWidth: HomeView.middleFloor)
 
-            startPanel
-                .frame(minWidth: 240, idealWidth: 300, maxWidth: 340)
-                .padding(.top, 20)
-                .padding(.bottom, 20)
-                .padding(.trailing, 20)
+                startPanel
+                    .frame(width: HomeView.panelWidth(forContent: geometry.size.width))
+            }
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
         .navigationTitle("Study")
         .navigationSubtitle(navigationSubtitle)
         .toolbar {
@@ -45,6 +46,24 @@ struct HomeView: View {
                 .help("Start a session (⏎)")
             }
         }
+    }
+
+    // MARK: - Column widths
+
+    /// The side panel gives way first: as the window narrows it drops from its comfortable width
+    /// down to `panelFloor`, and only once it is there does the middle column reach `middleFloor`.
+    /// The detail column's minimum width in `RootView` is built from exactly these two floors plus
+    /// the gap between them, so resizing can never squeeze either column past its floor.
+    static let middleFloor: CGFloat = 420
+    static let panelFloor: CGFloat = 220
+    static let panelCeiling: CGFloat = 320
+
+    /// Must match the `HStack` spacing in `body`.
+    static let columnSpacing: CGFloat = 20
+
+    /// Whatever is left once the middle column has its floor, kept inside the panel's own range.
+    static func panelWidth(forContent content: CGFloat) -> CGFloat {
+        min(panelCeiling, max(panelFloor, content - columnSpacing - middleFloor))
     }
 
     private var navigationSubtitle: String {

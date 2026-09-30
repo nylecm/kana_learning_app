@@ -21,7 +21,7 @@ struct RootView: View {
                 .navigationSplitViewColumnWidth(min: 200, ideal: 226, max: 260)
         } detail: {
             detail
-                .frame(minWidth: 640, minHeight: 620)
+                .frame(minWidth: 700, minHeight: 620)
         }
     }
 
