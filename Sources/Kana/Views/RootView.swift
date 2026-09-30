@@ -21,7 +21,11 @@ struct RootView: View {
                 .navigationSplitViewColumnWidth(min: 200, ideal: 226, max: 260)
         } detail: {
             detail
-                .frame(minWidth: 700, minHeight: 620)
+                // 2 x 20 window padding + 460 middle + 20 gap + 220 panel = the layout's real
+                // minimum, so the window stops before either column can be squeezed. The alignment
+                // matters: if the width ever falls short of that minimum, the detail overflows to
+                // the trailing edge instead of centring, which would slide it under the sidebar.
+                .frame(minWidth: 740, minHeight: 620, alignment: .topLeading)
         }
     }
 

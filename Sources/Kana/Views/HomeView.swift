@@ -6,6 +6,14 @@ struct HomeView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            // Both widths come from the space actually available, so the two columns always fill it
+            // exactly and neither can ever overlap the other or spill sideways. The floors are
+            // guarded by RootView's minimum width; if the window is somehow narrower than that, the
+            // panel holds its own floor and the middle simply loses the difference.
+            let content = max(0, geometry.size.width)
+            let panel = HomeView.panelWidth(forContent: content)
+            let middle = max(0, content - HomeView.columnSpacing - panel)
+
             HStack(alignment: .top, spacing: HomeView.columnSpacing) {
                 ScrollView {
                     ScrollViewReader { proxy in
@@ -25,10 +33,10 @@ struct HomeView: View {
                         }
                     }
                 }
-                .frame(minWidth: HomeView.middleFloor)
+                .frame(width: middle)
 
                 startPanel
-                    .frame(width: HomeView.panelWidth(forContent: geometry.size.width))
+                    .frame(width: panel)
             }
         }
         .padding(.horizontal, 20)
@@ -53,8 +61,9 @@ struct HomeView: View {
     /// The side panel gives way first: as the window narrows it drops from its comfortable width
     /// down to `panelFloor`, and only once it is there does the middle column reach `middleFloor`.
     /// The detail column's minimum width in `RootView` is built from exactly these two floors plus
-    /// the gap between them, so resizing can never squeeze either column past its floor.
-    static let middleFloor: CGFloat = 420
+    /// the gap between them (and the window's own padding), so resizing can never squeeze either
+    /// column past its floor.
+    static let middleFloor: CGFloat = 460
     static let panelFloor: CGFloat = 220
     static let panelCeiling: CGFloat = 320
 
