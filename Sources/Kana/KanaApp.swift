@@ -24,6 +24,9 @@ struct KanaApp: App {
                 .onAppear { model.start() }
         }
         .defaultSize(width: 1080, height: 740)
+        // Without this the window can be dragged narrower than the layout needs, and the content
+        // clips at both edges instead of the resize stopping.
+        .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .newItem) {
                 Button("New Session") { model.startSession() }

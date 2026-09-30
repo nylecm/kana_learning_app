@@ -321,8 +321,7 @@ final class AppModel {
         guard extending, let anchor = chartAnchorRow, rows.indices.contains(anchor) else {
             let selecting = !isRowSelected(index)
             setRows(index...index, selected: selecting)
-            chartAnchorRow = index
-            chartRangeSelects = selecting
+            anchorChartRange(at: index, selecting: selecting)
             return
         }
 
@@ -332,6 +331,16 @@ final class AppModel {
     /// The `R` key: toggle the row the cursor is on, exactly as a plain label click would.
     func toggleCursorRow() {
         toggleRow(at: cursor.row, extending: false)
+    }
+
+    /// Remembers where a ⇧-click starts from and which way it should go.
+    ///
+    /// Everything that changes the selection sets it, including the app's own first-run defaults,
+    /// ⌘A and ⌘⇧A — otherwise the first ⇧-click after launch would have no anchor and would behave
+    /// like a plain click.
+    private func anchorChartRange(at index: Int, selecting: Bool) {
+        chartAnchorRow = index
+        chartRangeSelects = selecting
     }
 
     func isRowSelected(_ index: Int) -> Bool {
@@ -352,20 +361,25 @@ final class AppModel {
         selectedKanaIDs = ids
     }
 
-    func toggle(_ card: Kana) {
+    /// Clicking a single cell becomes the anchor too, so a ⇧-click afterwards extends from here.
+    func toggle(_ card: Kana, atRow row: Int) {
         if selectedKanaIDs.contains(card.id) {
             selectedKanaIDs.remove(card.id)
+            anchorChartRange(at: row, selecting: false)
         } else {
             selectedKanaIDs.insert(card.id)
+            anchorChartRange(at: row, selecting: true)
         }
     }
 
     func selectAllInChartScript() {
         selectedKanaIDs.formUnion(library.filter { $0.script == chartScript }.map(\.id))
+        anchorChartRange(at: cursor.row, selecting: true)
     }
 
     func clearSelection() {
         selectedKanaIDs.removeAll()
+        anchorChartRange(at: cursor.row, selecting: false)
     }
 
     func cycleAnswerMode() {
@@ -564,6 +578,8 @@ final class AppModel {
             let ids = library.filter { $0.script == script && $0.rowID == "a" }.map(\.id)
             selectedKanaIDs.formUnion(ids)
         }
+        // The あ row arrives pre-selected, so a ⇧-click on a later row must extend from it.
+        anchorChartRange(at: cursor.row, selecting: true)
     }
 
     private func scheduleSave() {

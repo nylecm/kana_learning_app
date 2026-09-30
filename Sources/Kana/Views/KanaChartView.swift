@@ -43,7 +43,7 @@ struct KanaChartView: View {
             Text(label)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
-                .frame(width: 52, alignment: .leading)
+                .frame(width: 46, alignment: .leading)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -56,13 +56,16 @@ struct KanaChartView: View {
 
         return Button {
             model.cursor = .init(row: row, column: column)
-            model.toggle(card)
+            model.toggle(card, atRow: row)
         } label: {
             VStack(spacing: 0) {
-                Text(card.kana).font(.system(size: 21, weight: .medium))
+                Text(card.kana)
+                    .font(.system(size: 21, weight: .medium))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
                 Text(card.romaji).font(.system(size: 9)).foregroundStyle(.secondary)
             }
-            .frame(minWidth: 42)
+            .frame(minWidth: 36)
             .padding(.horizontal, 3)
             .padding(.vertical, 4)
             .background(

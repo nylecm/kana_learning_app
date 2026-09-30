@@ -26,7 +26,6 @@ struct SessionView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("End") { model.endSession() }
-                    .glassButtonStyle()
                     .help("End the session (Esc)")
             }
         }

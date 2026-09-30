@@ -27,7 +27,7 @@ struct HomeView: View {
             }
 
             startPanel
-                .frame(width: 320)
+                .frame(minWidth: 240, idealWidth: 300, maxWidth: 340)
                 .padding(.top, 20)
                 .padding(.bottom, 20)
                 .padding(.trailing, 20)
@@ -41,7 +41,6 @@ struct HomeView: View {
                 } label: {
                     Label("Start session", systemImage: "play.fill")
                 }
-                .glassButtonStyle(prominent: true, tint: Theme.accent)
                 .disabled(!model.canStart)
                 .help("Start a session (⏎)")
             }

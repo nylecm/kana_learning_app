@@ -5,6 +5,11 @@ import SwiftUI
 /// Building it on `NavigationSplitView` means macOS itself supplies the Liquid Glass sidebar, the
 /// rounded selection, the sidebar-toggle button, and the sidebar's own keyboard navigation. The
 /// `⌘1` `⌘2` `⌘3` commands keep driving the same selection binding they always did.
+///
+/// The minimum size lives on the *detail* column, not on the split view: a minimum on the split
+/// view makes the whole window lay out wider than its frame and clip both edges when it is shrunk,
+/// whereas this way the window's own minimum is the sidebar plus the detail, and `KanaApp` pins the
+/// window to it with `.windowResizability(.contentMinSize)`.
 struct RootView: View {
     @Environment(AppModel.self) private var model
 
@@ -13,11 +18,11 @@ struct RootView: View {
 
         NavigationSplitView {
             Sidebar(selection: $model.tab)
-                .navigationSplitViewColumnWidth(min: 200, ideal: 226, max: 300)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 226, max: 260)
         } detail: {
             detail
+                .frame(minWidth: 640, minHeight: 620)
         }
-        .frame(minWidth: 980, minHeight: 660)
     }
 
     @ViewBuilder
@@ -95,10 +100,11 @@ private struct TodayFooter: View {
                     Text("\(model.dueCount) due")
                         .font(.caption)
                         .foregroundStyle(Theme.accent)
+                        .lineLimit(1)
                 }
             }
 
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 metric("\(log.newIntroduced)", "new")
                 metric("\(log.reviews)", "reviews")
                 metric("\(model.plannedQueue.count)", "queued")
@@ -120,6 +126,7 @@ private struct TodayFooter: View {
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
         }
     }
 }

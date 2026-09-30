@@ -113,13 +113,16 @@ struct SectionCard<Content: View>: View {
                         .font(.callout)
                         .foregroundStyle(Theme.accent)
                 }
-                Text(title).font(.headline)
+                Text(title)
+                    .font(.headline)
+                    .layoutPriority(1)
                 Spacer(minLength: 8)
                 if let hint {
                     Text(hint)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.trailing)
+                        .lineLimit(2)
                 }
             }
             content
