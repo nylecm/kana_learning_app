@@ -106,9 +106,10 @@ Implemented with a single app-wide `NSEvent` local monitor plus menu-bar command
 | `1` `2` `3` | Scope: All / Selected / Struggling |
 | `A` | Cycle answer mode |
 | `T` | In Mixed, which script the kana chart shows |
-| `←` `→` `↑` `↓` | Move the chart cursor |
+| `←` `→` `↑` `↓` | Move the chart cursor; the view scrolls to keep the cursor row in sight |
 | `Space` | Toggle the character under the cursor |
 | `R` | Toggle the whole row under the cursor |
+| `⇧`-click a row label | Select or clear every row since the last one you clicked |
 | `S` | "Study ahead" toggle — ignore due dates |
 
 ### Study session
@@ -241,6 +242,12 @@ check. The keyboard contract in §6 is unchanged by any of this.
 swift run Kana                 # dev loop, no bundle
 swift run Kana --verify-data   # dataset integrity check; prints PASS/FAIL and exits
 ```
+
+The binary records the SDK it was built against (`linkedSDKVersion` in `Package.swift`, passed to
+the linker as `-platform_version`). AppKit chooses the era of its window chrome — and a number of
+its other behaviours — from that field rather than from the running OS, and SwiftPM would otherwise
+record the deployment target, leaving the app with older window controls on a new macOS. The
+deployment target itself stays at macOS 14.
 
 `--verify-data` asserts: 208 cards, 104 per script, exactly the expected kana in gojūon order per
 row, unique IDs, no empty mnemonic or example word, every example word actually contains its kana,

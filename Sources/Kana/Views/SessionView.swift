@@ -102,6 +102,7 @@ struct SessionView: View {
                         .glassButtonStyle(prominent: true, tint: Theme.accent)
                         .controlSize(.large)
                 } else {
+                    RevealPanel(session: session, card: card)
                     GradeButtons(session: session, card: card)
                 }
 
@@ -131,8 +132,9 @@ struct SessionView: View {
         VStack(spacing: 8) {
             TextField("rōmaji…", text: $draft)
                 .textFieldStyle(.roundedBorder)
-                .font(.system(size: 22, design: .rounded))
-                .frame(width: 260)
+                .font(.system(size: 26, design: .rounded))
+                .controlSize(.extraLarge)
+                .frame(width: 380)
                 .multilineTextAlignment(.center)
                 .focused($typingFocused)
                 .onSubmit(submitTyped)
@@ -272,9 +274,12 @@ private struct RevealPanel: View {
     var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 10) {
-                Image(systemName: session.lastAnswerWasCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                    .foregroundStyle(session.lastAnswerWasCorrect ? Theme.good : Theme.accent)
-                    .font(.title3)
+                // Flip mode is self-graded, so there is no verdict to show — only the answer.
+                if session.mode != .flip {
+                    Image(systemName: session.lastAnswerWasCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .foregroundStyle(session.lastAnswerWasCorrect ? Theme.good : Theme.accent)
+                        .font(.title3)
+                }
 
                 Text(card.romaji)
                     .font(.system(size: 30, weight: .semibold, design: .rounded))

@@ -53,6 +53,11 @@ final class AppModel {
     var ignoreDue = false
     var cursor = ChartCursor()
 
+    /// The row a ⇧-click extends from, and the state that range should take — both set by the last
+    /// plain row click, so a whole range can be selected or cleared in one gesture.
+    private var chartAnchorRow: Int?
+    private var chartRangeSelects = true
+
     var session: StudySession?
 
     let library = KanaLibrary.all
@@ -304,14 +309,47 @@ final class AppModel {
         }
     }
 
-    func toggleCursorRow() {
+    /// Toggles the row at `index`; with `extending`, applies the last plain click's state to every
+    /// row between that click and this one instead.
+    func toggleRow(at index: Int, extending: Bool) {
         let rows = chartRows
-        guard rows.indices.contains(cursor.row) else { return }
-        let row = rows[cursor.row]
-        let allSelected = row.allSatisfy { selectedKanaIDs.contains($0.id) }
-        for card in row {
-            if allSelected { selectedKanaIDs.remove(card.id) } else { selectedKanaIDs.insert(card.id) }
+        guard rows.indices.contains(index) else { return }
+
+        cursor.row = index
+        cursor.column = min(cursor.column, max(0, rows[index].count - 1))
+
+        guard extending, let anchor = chartAnchorRow, rows.indices.contains(anchor) else {
+            let selecting = !isRowSelected(index)
+            setRows(index...index, selected: selecting)
+            chartAnchorRow = index
+            chartRangeSelects = selecting
+            return
         }
+
+        setRows(min(anchor, index)...max(anchor, index), selected: chartRangeSelects)
+    }
+
+    /// The `R` key: toggle the row the cursor is on, exactly as a plain label click would.
+    func toggleCursorRow() {
+        toggleRow(at: cursor.row, extending: false)
+    }
+
+    func isRowSelected(_ index: Int) -> Bool {
+        let rows = chartRows
+        guard rows.indices.contains(index) else { return false }
+        return rows[index].allSatisfy { selectedKanaIDs.contains($0.id) }
+    }
+
+    /// Assigns `selectedKanaIDs` once, so shifting across twenty rows schedules a single save.
+    private func setRows(_ range: ClosedRange<Int>, selected: Bool) {
+        let rows = chartRows
+        var ids = selectedKanaIDs
+        for index in range where rows.indices.contains(index) {
+            for card in rows[index] {
+                if selected { ids.insert(card.id) } else { ids.remove(card.id) }
+            }
+        }
+        selectedKanaIDs = ids
     }
 
     func toggle(_ card: Kana) {

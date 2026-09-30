@@ -7,15 +7,23 @@ struct HomeView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 20) {
             ScrollView {
-                GlassGroup(spacing: 8) {
-                    VStack(alignment: .leading, spacing: Theme.cardSpacing) {
-                        scriptCard
-                        scopeCard
-                        if model.scope == .selected { KanaChartView() }
-                        answerModeCard
+                ScrollViewReader { proxy in
+                    GlassGroup(spacing: 8) {
+                        VStack(alignment: .leading, spacing: Theme.cardSpacing) {
+                            scriptCard
+                            scopeCard
+                            if model.scope == .selected { KanaChartView() }
+                            answerModeCard
+                        }
+                    }
+                    .padding(20)
+                    .onChange(of: model.cursor.row) { _, row in
+                        // A nil anchor scrolls the minimum amount that leaves the row wholly
+                        // visible, so arrowing just past the edge nudges the view and no more.
+                        guard model.scope == .selected else { return }
+                        proxy.scrollTo(KanaChartView.rowID(row), anchor: nil)
                     }
                 }
-                .padding(20)
             }
 
             startPanel

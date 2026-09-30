@@ -1,15 +1,22 @@
+import AppKit
 import SwiftUI
 
 /// The kana chart: one line per gojūon row. Clicking works, but the point is that `Space` toggles
 /// the character under the cursor and `R` toggles the whole row — that is how you "learn them in
 /// rows" without ever reaching for the mouse.
+///
+/// Clicking a row label and then ⇧-clicking another takes every row in between, the way a Finder
+/// list behaves: the last plain click decides whether the range is selected or cleared.
 struct KanaChartView: View {
     @Environment(AppModel.self) private var model
+
+    /// Scroll target for a row, so arrowing off-screen can reveal the cursor row.
+    static func rowID(_ rowIndex: Int) -> String { "kana-chart-row-\(rowIndex)" }
 
     var body: some View {
         SectionCard(
             title: "Kana chart",
-            hint: "←→↑↓ move · Space pick · R whole row · ⌘A all · ⌘⇧A none"
+            hint: "←→↑↓ move · Space pick · R whole row · ⇧-click extends · ⌘A all · ⌘⇧A none"
         ) {
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(Array(model.chartRows.enumerated()), id: \.offset) { rowIndex, cards in
@@ -20,6 +27,7 @@ struct KanaChartView: View {
                         }
                         Spacer(minLength: 0)
                     }
+                    .id(KanaChartView.rowID(rowIndex))
                 }
             }
         }
@@ -30,16 +38,16 @@ struct KanaChartView: View {
         let label = labels.indices.contains(rowIndex) ? labels[rowIndex].label(for: model.chartScript) : ""
 
         return Button {
-            model.cursor.row = rowIndex
-            model.toggleCursorRow()
+            model.toggleRow(at: rowIndex, extending: NSEvent.modifierFlags.contains(.shift))
         } label: {
             Text(label)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .frame(width: 52, alignment: .leading)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Toggle the whole \(label) row (R)")
+        .help("Toggle the whole \(label) row (R) — ⇧-click to take every row since the last one you clicked")
     }
 
     private func cell(_ card: Kana, row: Int, column: Int) -> some View {
@@ -51,7 +59,7 @@ struct KanaChartView: View {
             model.toggle(card)
         } label: {
             VStack(spacing: 0) {
-                Text(card.kana).font(.system(size: 19, weight: .medium))
+                Text(card.kana).font(.system(size: 21, weight: .medium))
                 Text(card.romaji).font(.system(size: 9)).foregroundStyle(.secondary)
             }
             .frame(minWidth: 42)

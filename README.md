@@ -37,9 +37,10 @@ The app is designed to be driven without a mouse.
 | `1` `2` `3` | Scope: All / Selected / Struggling |
 | `A` | Cycle the answer mode |
 | `T` | In Mixed, which script the chart shows |
-| `←` `→` `↑` `↓` | Move around the kana chart |
+| `←` `→` `↑` `↓` | Move around the kana chart — it scrolls to keep the cursor row in view |
 | `Space` | Toggle the character under the cursor |
 | `R` | Toggle the whole row under the cursor |
+| `⇧`-click a row label | Select or clear every row since the last one you clicked |
 | `S` | "Study ahead" — ignore due dates |
 | `⌘A` / `⌘⇧A` | Select every kana / clear the selection |
 
@@ -118,6 +119,11 @@ before; every keyboard command in the table above is unchanged.
 
 On macOS 26 the sidebar, toolbar and cards use the system Liquid Glass material. macOS 14 and 15
 render the same layout with standard materials, so nothing in the app requires the newer OS.
+
+The binary also names the SDK it was built against (see `linkedSDKVersion` in `Package.swift`),
+because AppKit takes the era of its window chrome from that field rather than from the system it is
+running on — SwiftPM would otherwise record the deployment target and leave the app with older
+window controls on a brand-new macOS.
 
 ## License
 
