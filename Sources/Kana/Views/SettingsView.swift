@@ -97,6 +97,7 @@ struct SettingsView: View {
                     keyRow("R / W", "hear the character / the example word")
                     keyRow("Esc", "end the session")
                     keyRow("H K M", "script · 1 2 3 scope · A answer mode · S study ahead")
+                    keyRow("G", "heat map — tint the chart by how well you know each kana")
                     keyRow("←→↑↓ + Space + R", "chart: move, pick a character, pick a whole row")
                     keyRow("⌘1 ⌘2 ⌘3", "Study / Progress / Settings")
                 }

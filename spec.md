@@ -32,6 +32,7 @@ end to end without touching the mouse.
 | 9 | Mnemonics | **Authored for every card** in `Sources/Kana/Data/`. No placeholders. |
 | 10 | Input | **Keyboard-first** (§6): every study action is on a key; the mouse is optional. |
 | 11 | Platforms | macOS 14+ (built and tested on macOS 27, Swift 6.4, Xcode 27) |
+| 12 | App icon | **`仮名` seal** on Apple's icon grid, drawn by `Icon/generate-icon.swift` (no binaries to hand-edit). One `.icns` ships and macOS renders it in every appearance itself — the app never swaps its icon at runtime. A dark appearance is authored (`KanaIcon-Dark.svg`) for a compiled asset catalog, which `actool` can't build here (needs Xcode's first-launch components) |
 
 ## 3. Non-goals
 
@@ -110,6 +111,7 @@ Implemented with a single app-wide `NSEvent` local monitor plus menu-bar command
 | `Space` | Toggle the character under the cursor |
 | `R` | Toggle the whole row under the cursor |
 | `⇧`-click a row label | Select or clear every row since the last one you clicked |
+| `G` | Heat map on/off |
 | `S` | "Study ahead" toggle — ignore due dates |
 
 ### Study session
@@ -233,6 +235,12 @@ check. The keyboard contract in §6 is unchanged by any of this.
   markers, and a table of all 208 cards (reviews, accuracy, lapses, ease, interval, due).
 - **Settings** — daily new/review limits (`0` = unlimited), default answer mode, Japanese voice +
   rate, auto-play toggles, "reset all progress", "reveal data file in Finder".
+
+The chart's heat map (`G`, or the switch in the chart card) tints every kana by how hard that card is
+fighting back. The hue is the card's struggle score — seven tenths miss rate, a fifth
+forgot-outright lapses, the rest how far the scheduler has pushed the ease down — running green → yellow → amber →
+red; the *opacity* carries how much evidence sits behind that score, and a card with no history stays
+a faint neutral so the studied cards are the ones that read. Row labels carry the row's average.
 
 ## 13. Build & run
 

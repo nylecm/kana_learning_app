@@ -30,6 +30,14 @@ rm -rf "${BUNDLE}"
 mkdir -p "${BUNDLE}/Contents/MacOS" "${BUNDLE}/Contents/Resources"
 cp "${BIN_PATH}/${APP_NAME}" "${BUNDLE}/Contents/MacOS/${APP_NAME}"
 
+# The bundle icon. macOS renders it in every appearance itself, so the app must never swap it at
+# runtime: an icon that changed when you opened the app would be a bug. See Icon/make-icon.sh.
+if [[ -f Icon/AppIcon.icns ]]; then
+    cp Icon/AppIcon.icns "${BUNDLE}/Contents/Resources/"
+else
+    echo "  (no app icon — run Icon/make-icon.sh; Finder will show the generic icon)" >&2
+fi
+
 cat > "${BUNDLE}/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -39,6 +47,7 @@ cat > "${BUNDLE}/Contents/Info.plist" <<PLIST
     <key>CFBundleDisplayName</key><string>Kana</string>
     <key>CFBundleExecutable</key><string>${APP_NAME}</string>
     <key>CFBundleIdentifier</key><string>local.kana.trainer</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>1.0</string>

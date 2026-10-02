@@ -42,8 +42,15 @@ The app is designed to be driven without a mouse.
 | `Space` | Toggle the character under the cursor |
 | `R` | Toggle the whole row under the cursor |
 | `⇧`-click a row label | Select or clear every row since the last one you clicked |
+| `G` | Heat map — tint every kana by how well you know it |
 | `S` | "Study ahead" — ignore due dates |
 | `⌘A` / `⌘⇧A` | Select every kana / clear the selection |
+
+The heat map (`G`, or the switch in the chart card) colours the chart by how hard each card is
+fighting back: green when it is solid, yellow then amber as it gets shaky, red when it keeps beating
+you, and a faint neutral for anything you have not really started. How *faint* the colour is tells
+you how much history is behind it, so one lucky answer does not read as mastery. Each row label
+carries a dot with the row's average.
 
 **During a session**
 
@@ -125,6 +132,35 @@ The binary also names the SDK it was built against (see `linkedSDKVersion` in `P
 because AppKit takes the era of its window chrome from that field rather than from the system it is
 running on — SwiftPM would otherwise record the deployment target and leave the app with older
 window controls on a brand-new macOS.
+
+## App icon
+
+`仮名` — the kanji spelling of *kana* — stacked vertically in white on the app's vermilion
+(`Theme.accent`), like a hanko seal. It sits on Apple's icon grid: an 824 × 824 body inside a
+1024 × 1024 canvas with superellipse corners, no baked drop shadow (the system adds one), and a
+Liquid Glass specular across the top edge, drawn over the glyph the way a real surface catches
+light.
+
+It's drawn by a script rather than kept as opaque binaries:
+
+```sh
+Icon/make-icon.sh          # redraws the SVG + PNG sizes, then rebuilds AppIcon.icns
+./build.sh                 # copies it into Kana.app/Contents/Resources
+```
+
+`Icon/generate-icon.swift` is the source of truth — the glyph, the two palettes and the geometry are
+constants at the top of the file. Its vector output is `Icon/KanaIcon.svg` (light) and
+`Icon/KanaIcon-Dark.svg`, if you'd rather work in a drawing app.
+
+One appearance ships: `AppIcon.icns`, which `Info.plist` names so Finder, Launchpad and the Dock all
+use it. macOS renders that icon in every appearance itself, so it looks the same closed and open —
+the app deliberately never touches its own icon at runtime, because anything it did there would work
+against the system's rendering and visibly change the icon the moment you launched it.
+
+`Icon/KanaIcon-Dark.svg` is the authored dark appearance, kept as a vector source rather than
+shipped: the day the icon travels as a *compiled asset catalog* instead of a lone `.icns`, that file
+is what a dark (and tinted) layer would be built from. `actool` compiles those catalogs and needs
+Xcode's first-launch components (`xcodebuild -runFirstLaunch`), which aren't installed here.
 
 ## License
 

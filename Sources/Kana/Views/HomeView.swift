@@ -21,8 +21,8 @@ struct HomeView: View {
                             VStack(alignment: .leading, spacing: Theme.cardSpacing) {
                                 scriptCard
                                 scopeCard
-                                if model.scope == .selected { KanaChartView() }
                                 answerModeCard
+                                if model.scope == .selected { KanaChartView() }
                             }
                         }
                         .onChange(of: model.cursor.row) { _, row in

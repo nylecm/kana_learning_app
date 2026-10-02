@@ -53,6 +53,9 @@ final class AppModel {
     var ignoreDue = false
     var cursor = ChartCursor()
 
+    /// Colour the kana chart by how well each card is known.
+    var showHeatmap = false { didSet { scheduleSave() } }
+
     /// The row a ⇧-click extends from, and the state that range should take — both set by the last
     /// plain row click, so a whole range can be selected or cleared in one gesture.
     private var chartAnchorRow: Int?
@@ -441,6 +444,7 @@ final class AppModel {
             case "a": cycleAnswerMode()
             case "t": mixedChartScript = mixedChartScript.other
             case "s": ignoreDue.toggle()
+            case "g": showHeatmap.toggle()
             case "r":
                 guard scope == .selected else { return false }
                 toggleCursorRow()
@@ -536,6 +540,7 @@ final class AppModel {
         var scope: Scope = .all
         var mixedChartScript: KanaScript = .hiragana
         var selectedKanaIDs: Set<String> = []
+        var showHeatmap: Bool = false
     }
 
     static let stateURL: URL = {
@@ -555,7 +560,7 @@ final class AppModel {
 
     private func load() {
         guard let data = try? Data(contentsOf: AppModel.stateURL),
-              let state = try? JSONDecoder().decode(PersistedState.self, from: data)
+              let state = decodeState(from: data)
         else {
             applyFirstRunDefaults()
             return
@@ -569,6 +574,16 @@ final class AppModel {
         scope = state.scope
         mixedChartScript = state.mixedChartScript
         selectedKanaIDs = state.selectedKanaIDs.filter { KanaLibrary.byID[$0] != nil }
+        showHeatmap = state.showHeatmap
+    }
+
+    /// Mirrors `saveNow`'s date encoding. The encoder writes dates as ISO-8601 strings, so the
+    /// decoder must be told to read them back the same way — otherwise a non-empty `cards` map
+    /// fails to decode and every relaunch silently falls through to a fresh install.
+    private func decodeState(from data: Data) -> PersistedState? {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try? decoder.decode(PersistedState.self, from: data)
     }
 
     /// A brand new learner starts with the あ row selected in both scripts — five cards, not 104.
@@ -603,7 +618,8 @@ final class AppModel {
             scriptMode: scriptMode,
             scope: scope,
             mixedChartScript: mixedChartScript,
-            selectedKanaIDs: selectedKanaIDs
+            selectedKanaIDs: selectedKanaIDs,
+            showHeatmap: showHeatmap
         )
 
         do {

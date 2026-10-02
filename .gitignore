@@ -3,5 +3,8 @@
 Kana.app/
 .swiftpm/
 
+# Generated icon rasters — Icon/make-icon.sh rebuilds them from the vector sources
+Icon/*.iconset/
+
 # macOS
 .DS_Store

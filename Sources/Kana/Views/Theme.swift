@@ -163,6 +163,48 @@ struct KeyHint: View {
     }
 }
 
+// MARK: - Heat map
+
+/// The heat map's ramp: a card you know cold is green, a card that keeps fighting you is red, and
+/// the ground between is yellow then amber. Blended between stops rather than bucketed, so a chart
+/// of them reads as a gradient instead of four colour bins.
+enum HeatScale {
+    /// Position along the ramp, with the colour it lands on.
+    private static let stops: [(at: Double, rgb: (Double, Double, Double))] = [
+        (0.00, (0.16, 0.62, 0.38)),   // solid
+        (0.33, (0.95, 0.78, 0.16)),   // shaky
+        (0.66, (0.93, 0.53, 0.08)),   // slipping
+        (1.00, (0.82, 0.22, 0.20)),   // struggling
+    ]
+
+    static func color(for struggle: Double) -> Color {
+        let value = min(max(struggle, 0), 1)
+        for index in 1 ..< stops.count {
+            let lower = stops[index - 1]
+            let upper = stops[index]
+            guard value <= upper.at else { continue }
+            let span = upper.at - lower.at
+            let t = span == 0 ? 0 : (value - lower.at) / span
+            return Color(
+                red: lower.rgb.0 + (upper.rgb.0 - lower.rgb.0) * t,
+                green: lower.rgb.1 + (upper.rgb.1 - lower.rgb.1) * t,
+                blue: lower.rgb.2 + (upper.rgb.2 - lower.rgb.2) * t
+            )
+        }
+        let last = stops[stops.count - 1].rgb
+        return Color(red: last.0, green: last.1, blue: last.2)
+    }
+
+    /// The left-to-right ramp drawn in the chart's legend.
+    static var legend: LinearGradient {
+        LinearGradient(
+            colors: stops.map { Color(red: $0.rgb.0, green: $0.rgb.1, blue: $0.rgb.2) },
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+}
+
 extension KanaScript {
     var tint: Color {
         switch self {

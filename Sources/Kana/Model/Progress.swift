@@ -60,6 +60,27 @@ struct CardProgress: Codable, Hashable, Sendable {
     var isMature: Bool { phase == .review && intervalDays >= 21 }
 
     var isStarted: Bool { reviews > 0 }
+
+    /// How hard this card is fighting back: 0 is solid, 1 is struggling. Feeds the kana chart's heat
+    /// map, so it deliberately mixes the three signals the scheduler already keeps.
+    ///
+    /// Seven tenths of it is how often the card has been missed — the most legible signal, and one a
+    /// card can be bad at from its first answer — a fifth how often it has been forgotten outright,
+    /// which is the signal the spec's own struggling rule leans on, and the rest how far the
+    /// scheduler has had to push the ease down, which shows up before the score does. A card
+    /// answered right every time lands on 0; one answered wrong every time is already deep in the
+    /// red without needing a single lapse.
+    var struggle: Double {
+        guard isStarted else { return 0 }
+        let missRate = 1 - accuracy
+        let lapseLoad = min(Double(lapses) / 3, 1)
+        let easeLoad = min(max((2.5 - ease) / 1.2, 0), 1)
+        return min(1, missRate * 0.7 + lapseLoad * 0.2 + easeLoad * 0.1)
+    }
+
+    /// How much evidence sits behind `struggle`, which the heat map uses as its opacity: one lucky
+    /// answer should look faint rather than confidently green.
+    var heatConfidence: Double { min(1, Double(reviews) / 3) }
 }
 
 /// Per-day counters, keyed by local date, used for the daily limits.
