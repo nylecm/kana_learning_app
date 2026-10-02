@@ -32,34 +32,34 @@ enum Deck {
         }
     }
 
-    /// The ordered queue for a session: due learning cards, then due reviews, then new cards.
+    /// The ordered queue for a session: learning cards, then reviews, then new cards, earliest due
+    /// first within each group. Due dates are ignored on purpose — a sitting always studies ahead,
+    /// so it can run even when nothing is due yet.
     static func queue(
         pool: [Kana],
         scope: Scope,
         progress: [String: CardProgress],
-        now: Date,
         newLimit: Int,
-        reviewLimit: Int,
-        ignoreDue: Bool
+        reviewLimit: Int
     ) -> [Kana] {
         // A Struggling session is a deliberate cram: no schedule, no caps.
         if scope == .struggling { return pool }
 
         func state(_ card: Kana) -> CardProgress { progress[card.id] ?? CardProgress() }
 
-        let learningDue = pool
-            .filter { state($0).phase == .learning && (ignoreDue || state($0).due <= now) }
+        let learning = pool
+            .filter { state($0).phase == .learning }
             .sorted { state($0).due < state($1).due }
 
-        let reviewDue = pool
-            .filter { state($0).phase == .review && (ignoreDue || state($0).due <= now) }
+        let scheduledReviews = pool
+            .filter { state($0).phase == .review }
             .sorted { state($0).due < state($1).due }
 
         let unseen = pool.filter { state($0).phase == .new }
 
-        let reviews = reviewLimit == Int.max ? reviewDue : Array(reviewDue.prefix(reviewLimit))
+        let reviews = reviewLimit == Int.max ? scheduledReviews : Array(scheduledReviews.prefix(reviewLimit))
         let news = newLimit == Int.max ? unseen : Array(unseen.prefix(newLimit))
-        return learningDue + reviews + news
+        return learning + reviews + news
     }
 
     /// Cards ready to be shown right now — drives the "due today" counter on the home screen.

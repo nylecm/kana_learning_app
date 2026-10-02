@@ -50,7 +50,6 @@ final class AppModel {
     var scope: Scope = .all { didSet { scheduleSave() } }
     var selectedKanaIDs: Set<String> = [] { didSet { scheduleSave() } }
     var mixedChartScript: KanaScript = .hiragana { didSet { scheduleSave() } }
-    var ignoreDue = false
     var cursor = ChartCursor()
 
     /// Colour the kana chart by how well each card is known.
@@ -145,10 +144,8 @@ final class AppModel {
             pool: pool,
             scope: scope,
             progress: progress,
-            now: .now,
             newLimit: remainingNewLimit,
-            reviewLimit: remainingReviewLimit,
-            ignoreDue: ignoreDue
+            reviewLimit: remainingReviewLimit
         )
     }
 
@@ -157,6 +154,16 @@ final class AppModel {
     }
 
     var newCount: Int { Deck.newCount(pool: pool, progress: progress) }
+
+    /// How many cards in the planned queue the schedule has not released yet. Sessions always study
+    /// ahead, so this is what the home screen warns about under the start button.
+    var aheadCount: Int {
+        let now = Date()
+        return plannedQueue.filter {
+            let state = progress[$0.id] ?? CardProgress()
+            return (state.phase == .learning || state.phase == .review) && state.due > now
+        }.count
+    }
 
     var todayLog: DayLog { dailyLog[AppModel.dayKey(Date())] ?? DayLog() }
 
@@ -198,7 +205,7 @@ final class AppModel {
             if remainingReviewLimit == 0 {
                 return "Daily review limit reached. Raise it in Settings."
             }
-            return "Everything is scheduled for later. Press S to study ahead."
+            return nil
         }
     }
 
@@ -443,7 +450,6 @@ final class AppModel {
             case "3": scope = .struggling
             case "a": cycleAnswerMode()
             case "t": mixedChartScript = mixedChartScript.other
-            case "s": ignoreDue.toggle()
             case "g": showHeatmap.toggle()
             case "r":
                 guard scope == .selected else { return false }

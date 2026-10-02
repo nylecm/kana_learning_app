@@ -177,7 +177,6 @@ struct HomeView: View {
     // MARK: - Start panel
 
     private var startPanel: some View {
-        @Bindable var model = model
         let queue = model.plannedQueue
 
         return VStack(alignment: .leading, spacing: Theme.cardSpacing) {
@@ -224,21 +223,23 @@ struct HomeView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            if model.canStart, model.aheadCount > 0 {
+                let count = model.aheadCount
+                Label(
+                    "Studying ahead — \(count) queued card\(count == 1 ? "" : "s") \(count == 1 ? "isn't" : "aren't") due yet.",
+                    systemImage: "exclamationmark.triangle.fill"
+                )
+                .font(.caption)
+                .foregroundStyle(Theme.warn)
+                .fixedSize(horizontal: false, vertical: true)
+            }
+
             if model.canStart && model.dueCount == 0 && model.newCount > 0 {
                 Text("Nothing is due yet — everything queued here is a first exposure.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-
-            Toggle(isOn: $model.ignoreDue) {
-                HStack(spacing: 5) {
-                    Text("Study ahead")
-                    KeyCap(text: "S")
-                }
-                .font(.callout)
-            }
-            .help("Ignore due dates and work through the queue anyway")
 
             Text("Progress is saved to ~/Library/Application Support/Kana/state.json")
                 .font(.caption2)

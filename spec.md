@@ -112,7 +112,6 @@ Implemented with a single app-wide `NSEvent` local monitor plus menu-bar command
 | `R` | Toggle the whole row under the cursor |
 | `⇧`-click a row label | Select or clear every row since the last one you clicked |
 | `G` | Heat map on/off |
-| `S` | "Study ahead" toggle — ignore due dates |
 
 ### Study session
 
@@ -180,14 +179,16 @@ Three scopes, one selection set:
 
 ```
 pool  = cards matching (script filter) ∩ (selection, when scope is Selected)
-queue = learning-due  +  review-due (oldest first)  +  up to N unseen cards
+queue = learning (oldest first)  +  reviews (oldest first)  +  up to N unseen cards
 ```
 
 - Script filter: Hiragana / Katakana / Mixed. In Mixed, the store remembers the last session's
   script and alternates; chart selections for both scripts are kept.
-- `S` ("study ahead") drops the due-date filter so a session can run when nothing is due.
+- Study ahead is always on: the due-date filter is dropped, so a session can run when nothing is
+  due. While the plan reaches past the schedule, the home screen warns how many queued cards are
+  not due yet.
 - Daily counters (`newIntroduced`, `reviews`) reset at local midnight. `0` = unlimited.
-- If the queue would be empty, the home screen says so and offers "study ahead" rather than
+- If the queue is empty — the daily limits have been reached — the home screen says why rather than
   starting a dead session.
 
 ## 10. Speech

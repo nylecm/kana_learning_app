@@ -43,7 +43,6 @@ The app is designed to be driven without a mouse.
 | `R` | Toggle the whole row under the cursor |
 | `⇧`-click a row label | Select or clear every row since the last one you clicked |
 | `G` | Heat map — tint every kana by how well you know it |
-| `S` | "Study ahead" — ignore due dates |
 | `⌘A` / `⌘⇧A` | Select every kana / clear the selection |
 
 The heat map (`G`, or the switch in the chart card) colours the chart by how hard each card is
@@ -51,6 +50,10 @@ fighting back: green when it is solid, yellow then amber as it gets shaky, red w
 you, and a faint neutral for anything you have not really started. How *faint* the colour is tells
 you how much history is behind it, so one lucky answer does not read as mastery. Each row label
 carries a dot with the row's average.
+
+Sessions always study ahead: due dates order the queue but never hold a card back, so you can keep
+going when nothing is due yet. When the plan reaches past the schedule, the Study screen warns how
+many queued cards are not due.
 
 **During a session**
 

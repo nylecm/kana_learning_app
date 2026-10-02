@@ -55,13 +55,6 @@ struct KanaApp: App {
                 Button("Clear Selection") { model.clearSelection() }
                     .keyboardShortcut("a", modifiers: [.command, .shift])
                     .disabled(model.tab != .study || model.scope != .selected || model.session != nil)
-
-                Divider()
-                Toggle("Study Ahead (ignore due dates)", isOn: Binding(
-                    get: { model.ignoreDue },
-                    set: { model.ignoreDue = $0 }
-                ))
-                .keyboardShortcut("s", modifiers: [.command, .shift])
             }
         }
     }
