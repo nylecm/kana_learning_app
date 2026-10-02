@@ -3,7 +3,7 @@
 Kana.app/
 .swiftpm/
 
-# Generated icon rasters — Icon/make-icon.sh rebuilds them from the vector sources
+# Icon raster sets are generated locally; the committed Icon/AppIcon.icns is what build.sh copies
 Icon/*.iconset/
 
 # macOS
