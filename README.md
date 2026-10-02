@@ -2,7 +2,8 @@
 
 A local, offline macOS app for learning **hiragana** and **katakana** with flashcards, mnemonics,
 and SM-2 spaced repetition. It can read characters aloud with the Mac's built-in Japanese voices.
-Nothing ever touches the network, and there are no third-party dependencies.
+
+**Note: AI Generated Work**
 
 See `spec.md` for the full design and the decisions behind it.
 
